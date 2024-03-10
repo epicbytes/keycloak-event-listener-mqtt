@@ -22,8 +22,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.paho.client.mqttv3.IMqttClient;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.mqttv5.client.IMqttClient;
+import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.json.simple.JSONObject;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
@@ -110,7 +112,6 @@ public class MQTTEventListenerProvider implements EventListenerProvider {
 
     private String convertAdminEvent(AdminEvent adminEvent) {
         JSONObject ev = new JSONObject();
-
 
         ev.put("clientId", adminEvent.getAuthDetails().getClientId());
         ev.put("error", adminEvent.getError());

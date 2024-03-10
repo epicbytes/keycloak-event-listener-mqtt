@@ -22,12 +22,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.paho.client.mqttv3.IMqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.eclipse.paho.mqttv5.client.IMqttClient;
+import org.eclipse.paho.mqttv5.client.MqttClient;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.mqttv5.common.MqttException;
+import org.eclipse.paho.mqttv5.common.MqttSecurityException;
+import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence;
 import org.keycloak.Config;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventListenerProviderFactory;
@@ -56,7 +56,8 @@ public class MQTTEventListenerProviderFactory implements EventListenerProviderFa
 
     @Override
     public void init(Config.Scope config) {
-        var excludes = config.getArray("excludeEvents");
+        logger.log(Level.SEVERE, config.get("serverUri", "lolkek"));
+        String[] excludes = config.getArray("excludeEvents");
         if (excludes != null) {
             excludedEvents = new HashSet<EventType>();
             for (String e : excludes) {
@@ -72,22 +73,22 @@ public class MQTTEventListenerProviderFactory implements EventListenerProviderFa
             }
         }
 
-        MqttConnectOptions options = new MqttConnectOptions();
-        var serverUri = config.get("serverUri", "tcp://localhost:1883");
+        MqttConnectionOptions options = new MqttConnectionOptions();
+        String serverUri = config.get("serverUri", "tcp://mqtt.local:1883");
         
         MemoryPersistence persistence = null;
         if (config.getBoolean("usePersistence", false)) {
             persistence = new MemoryPersistence();
         }
         
-        var username = config.get("username", null);
-        var password = config.get("password", null);
+        String username = config.get("username", null);
+        String password = config.get("password", null);
         if (username != null && password != null) {
             options.setUserName(username);
-            options.setPassword(password.toCharArray());
+            options.setPassword(password.getBytes());
         }
         options.setAutomaticReconnect(true);
-        options.setCleanSession(config.getBoolean("cleanSession", true));
+        //options.setCleanSession(config.getBoolean("cleanSession", true));
         options.setConnectionTimeout(10);
 
         messageOptions = new MQTTMessageOptions();
@@ -99,9 +100,9 @@ public class MQTTEventListenerProviderFactory implements EventListenerProviderFa
             client = new MqttClient(serverUri, PUBLISHER_ID, persistence);
             client.connect(options);
         } catch (MqttSecurityException e){
-            logger.log(Level.SEVERE, "Connection not secure!", e);
+            logger.log(Level.WARNING, "Connection not secure!", e);
         } catch (MqttException e){
-            logger.log(Level.SEVERE, "Connection could not be established!", e);
+            logger.log(Level.WARNING, "Connection could not be established!", e);
         }        
     }
 

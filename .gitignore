@@ -1,2 +1,3 @@
 target/
 testing/mosquitto/log/mosquitto.log
+.DS_Store
